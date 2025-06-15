@@ -15,7 +15,7 @@ dnf install -y epel-*
 crb enable
 dnf install -y heimdal-devel chkconfig initscripts lm_sensors-libs mysql-server  cifs-utils samba-client samba tar wget  perl-Parse-Yapp patch gcc python-devel gnutls-devel make rpcgen perl-CPAN zlib-devel
 dnf install -y php-intl php-mysqlnd php bison flex e2fsprogs-devel
-cpan install JSON 
+echo | cpan install JSON 
 mkdir /greyhole
 mkdir /greyhole/lz
 mkdir /greyhole/drives
