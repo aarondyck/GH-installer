@@ -3,7 +3,7 @@
 ### This script will install Greyhole from the official repository ###
 ### on RHEL-based systems. It has been tested on Rocky Linux 9.    ###
 ######################################################################
--e
+
 
 if [[ $EUID -ne 0 ]]; then
 	>&2 echo "You need to execute this script using sudo."
