@@ -3,14 +3,14 @@
 ### This script will install Greyhole from the official repository ###
 ### on RHEL-based systems. It has been tested on Rocky Linux 9.    ###
 ######################################################################
-
+-e
 
 if [[ $EUID -ne 0 ]]; then
 	>&2 echo "You need to execute this script using sudo."
 	exit 2
 fi
 
-set -x
+set +x
 dnf install -y epel-* 
 crb enable
 dnf install -y heimdal-devel chkconfig initscripts lm_sensors-libs mysql-server  cifs-utils samba-client samba tar wget  perl-Parse-Yapp patch gcc python-devel gnutls-devel make rpcgen perl-CPAN zlib-devel
@@ -26,18 +26,21 @@ wget  https://github.com/gboudreau/Greyhole/releases/download/0.15.25/greyhole-0
 tar -xf greyhole-0.15.25.tar.gz
 cd ./greyhole-0.15.25
 GREYHOLE_INSTALL_DIR=$(pwd)
-mkdir ./updates
 ##################################################
 ### Here I will download the additional assets ###
 ### that I have created for Rocky Linux        ###
 ##################################################
-
-
+echo "Downloading updated files"
+set -x
+wget https://github.com/aarondyck/GH-installer/releases/download/v0.1.0/greyhole-smb.systemd
+wget https://github.com/aarondyck/GH-installer/releases/download/v0.1.0/build_vfs2.sh
+set +x
 ####################################################
 ### For the most part, this is the normal manual ###
 ### installation script from the official docs   ###
 ####################################################
 
+echo "Installing Greyhole"
 mkdir -p /var/spool/greyhole
 mkdir -p /var/spool/greyhole
 chmod 777 /var/spool/greyhole
@@ -61,17 +64,24 @@ install -m 0755 -D -p scripts-examples/greyhole_notify_error.sh /usr/share/greyh
 install -m 0755 -D -p scripts-examples/greyhole_send_fsck_report.sh /usr/share/greyhole/scripts-examples
 install -m 0755 -D -p scripts-examples/greyhole_sysadmin_notification.sh /usr/share/greyhole/scripts-examples
 install -m 0644 -D -p USAGE /usr/share/greyhole
-## install -m 0755 -D -p build_vfs.sh /usr/share/greyhole
-install -m 0755 -D -p ./updates/build_vfs.sh /usr/share/greyhole
+## install -m 0755 -D -p build_vfs.sh /usr/share/greyhole  ### I don't want to use the existing build_vfs file
+install -m 0755 -D -p build_vfs2.sh /usr/share/greyhole/build_vfs.sh   ### This is the updated file 
 install -m 0644 -D -p docs/greyhole.1.gz /usr/share/man/man1/
 install -m 0644 -D -p docs/greyhole-dfree.1.gz /usr/share/man/man1/
 install -m 0644 -D -p docs/greyhole.conf.5.gz /usr/share/man/man5/
 LIBDIR=/usr/lib
 mkdir "$LIBDIR/greyhole"
+install -m 0644 -D -p greyhole-smb.systemd /usr/lib/systemd/system/greyhole.service ##This is the updated service file for Rocky Linux
 ## cp samba-module/bin/$SMB_VERSION/greyhole-$(uname -m).so "$LIBDIR/greyhole/greyhole-samba${SMB_VERSION//.}.so"
 ## The samba module doesn't exist - we know this. My script will build it automatically and then install it. 
 
 ######################################################
+### This will build the samba module using DNF     ###
+### for RHEL-based Linux systems. This portion of  ###
+### the script is based on build_vfs2.sh.          ###
+######################################################
+echo "Building Samba module"
+
 ceol=$(tput el)
 
 if [[ -z ${GREYHOLE_VFS_BUILD_DIR} ]]; then
@@ -92,7 +102,7 @@ M=$(echo "${version}" | awk -F'.' '{print $1}') # major
 m=$(echo "${version}" | awk -F'.' '{print $2}') # minor
 # shellcheck disable=SC2034
 B=$(echo "${version}" | awk -F'.' '{print $3}') # build
-
+echo "Your Samba version is ${version}"
 echo
 echo "Installing build dependencies..."
 echo "- Installing build-essential / gcc (etc.)"
@@ -319,4 +329,4 @@ fi
 ######################################################
 
 
-install -m 0644 -D -p ./updates/greyhole-smb.systemd /usr/lib/systemd/system/greyhole.service
+
