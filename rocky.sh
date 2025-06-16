@@ -29,8 +29,7 @@ GREYHOLE_INSTALL_DIR=$(pwd)
 mkdir ./updates
 ##################################################
 ### Here I will download the additional assets ###
-### that I have created for Rocky Linux - they ###
-### will be placed in the updates folder.      ###
+### that I have created for Rocky Linux        ###
 ##################################################
 
 
